@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#08090f">
+  <meta name="description" content="NEXUS MOBILE — Nexus McCain personal AI assistant">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <title>NEXUS MOBILE</title>
+  <style>
+    :root { color-scheme: dark; --red:#ff344d; --blue:#58baff; --bg:#070910; }
+    * { box-sizing:border-box }
+    body { margin:0; min-height:100vh; background:radial-gradient(ellipse at 50% 35%,#17202d 0,#080a12 55%,#030409 100%); color:#f3f5fb; font-family:system-ui,-apple-system,Segoe UI,sans-serif; }
+    .app { min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:18px 14px calc(22px + env(safe-area-inset-bottom)); gap:14px; }
+    header { width:min(100%,620px); display:flex; justify-content:space-between; align-items:center; letter-spacing:.18em; font-size:12px; color:#ff7180; }
+    .status { color:#ff6678; border:1px solid #87313f; border-radius:30px; padding:6px 10px; letter-spacing:.08em; }
+    .portrait-wrap { width:min(100%,620px); position:relative; border:1px solid #8e2637; border-radius:18px; overflow:hidden; box-shadow:0 0 30px #e21d3830, 0 0 70px #247ab022; background:#080b13; }
+    .portrait { display:block; width:100%; height:auto; }
+    .overlay { position:absolute; inset:auto 0 0; padding:22px 14px 14px; background:linear-gradient(transparent,#05070ddd); text-align:center; }
+    .name { color:#ff5267; letter-spacing:.24em; font-weight:700; font-size:clamp(16px,4vw,23px); text-shadow:0 0 14px #ff304a88; }
+    .sub { color:#c7d3e3; letter-spacing:.25em; font-size:10px; margin-top:4px; }
+    .greeting { width:min(100%,620px); text-align:center; color:#dce6f3; font-size:16px; }
+    .controls { width:min(100%,620px); display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    button { border:1px solid #9d3345; border-radius:12px; background:#180d16; color:#fff; padding:14px 12px; font-size:15px; font-weight:650; cursor:pointer; }
+    button.primary { background:linear-gradient(135deg,#a51d36,#4b1428); box-shadow:0 0 18px #e32a4533; }
+    button:active { transform:scale(.985) }
+    .chat { width:min(100%,620px); display:flex; gap:8px; }
+    input { min-width:0; flex:1; border:1px solid #344154; border-radius:12px; background:#0b101a; color:#fff; padding:13px; font-size:15px; }
+    .chat button { padding-inline:18px; }
+    #reply { width:min(100%,620px); min-height:48px; border:1px solid #283445; border-radius:12px; background:#0a0e17cc; padding:12px; color:#cbd7e6; line-height:1.45; }
+    footer { margin-top:auto; color:#6f7d91; font-size:11px; letter-spacing:.12em; text-align:center; }
+    @media (min-width:700px) { .app { padding-top:26px } .portrait-wrap { max-height:72vh; } .portrait { max-height:72vh; object-fit:contain; } }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header><span>NEXUS MOBILE</span><span class="status" id="status">● ONLINE</span></header>
+    <section class="portrait-wrap" aria-label="Nexus McCain portrait">
+      <img class="portrait" src="assets/nexus-mccain.png" alt="Nexus McCain, the NEXUS personal AI assistant">
+      <div class="overlay"><div class="name">NEXUS McCAIN</div><div class="sub">PERSONAL AI ASSISTANT</div></div>
+    </section>
+    <div class="greeting" id="greeting">Hey. I'm Nexus. How can I help you today?</div>
+    <section class="controls">
+      <button class="primary" id="talk">🎙 Talk to Nexus</button>
+      <button id="stop">■ Interrupt</button>
+    </section>
+    <form class="chat" id="chat">
+      <input id="message" autocomplete="off" placeholder="Message Nexus…" aria-label="Message Nexus">
+      <button class="primary" type="submit">Send</button>
+    </form>
+    <div id="reply" role="status">Nexus is ready. Tap Talk to Nexus or type a message.</div>
+    <footer>VOICE • MEMORY • COMMAND CENTRE</footer>
+  </main>
+  <script>
+    const reply = document.getElementById('reply');
+    const message = document.getElementById('message');
+    const status = document.getElementById('status');
+    function respond(text) {
+      const t = text.toLowerCase().trim();
+      let answer = "I'm here. My full AI connection is not set up yet, but the NEXUS interface is running.";
+      if (/hello|hi|hey/.test(t)) answer = "Hello. Nexus McCain online. What would you like to do?";
+      else if (/your name|who are you/.test(t)) answer = "I'm Nexus McCain, your personal AI assistant.";
+      else if (/time/.test(t)) answer = "The time shown by your phone is " + new Date().toLocaleTimeString() + ".";
+      else if (/date|today/.test(t)) answer = "Today is " + new Date().toLocaleDateString() + ".";
+      else if (/help/.test(t)) answer = "You can talk or type here. Cloud AI, long-term memory and phone controls still need to be connected.";
+      reply.textContent = answer;
+      if ('speechSynthesis' in window) { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(answer); u.rate = 0.96; speechSynthesis.speak(u); }
+    }
+    document.getElementById('chat').addEventListener('submit', e => { e.preventDefault(); if(message.value.trim()) { respond(message.value); message.value=''; }});
+    document.getElementById('stop').addEventListener('click', () => { if('speechSynthesis' in window) speechSynthesis.cancel(); reply.textContent = "Speech interrupted."; });
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    document.getElementById('talk').addEventListener('click', () => {
+      if (!SpeechRecognition) { reply.textContent = "Voice recognition isn't supported in this browser. You can type to Nexus instead."; return; }
+      const rec = new SpeechRecognition(); rec.lang = 'en-NZ'; rec.interimResults = false;
+      status.textContent = "● LISTENING";
+      rec.onresult = e => respond(e.results[0][0].transcript);
+      rec.onerror = () => { reply.textContent = "I couldn't hear that. Check microphone permission and try again."; };
+      rec.onend = () => status.textContent = "● ONLINE";
+      rec.start();
+    });
+    if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+    }
+  </script>
+</body>
+</html>
